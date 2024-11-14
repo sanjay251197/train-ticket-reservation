@@ -1,14 +1,19 @@
 package ticket.reservation;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 
 import ticket.reservation.controller.BookingController;
+import ticket.reservation.dto.SeatUserMappingResponse;
 import ticket.reservation.dto.TicketPurchaseRequest;
 import ticket.reservation.model.Ticket;
 import ticket.reservation.model.User;
@@ -53,7 +58,7 @@ class BookingControllerTest {
 	@Test
 	void givenTicketReceiptIsInvalidTest() {
 
-		assertThat(bookingController.viewTicketDetails("test").getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+		assertThat(bookingController.viewTicketDetails("test").getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
 
 	}
 
@@ -79,15 +84,39 @@ class BookingControllerTest {
 		Ticket ticket = purchaseTicket();
 		assertThat(
 				bookingController.retrieveUserSeatMappingsBySectionAndTrain(120, ticket.getSection()).getStatusCode())
-				.isEqualTo(HttpStatus.BAD_REQUEST);
+				.isEqualTo(HttpStatus.NOT_FOUND);
 	}
-	
+
 	@Test
 	void givenInvalidSectionToFetchTicketDetails() {
 		Ticket ticket = purchaseTicket();
+		assertThat(bookingController.retrieveUserSeatMappingsBySectionAndTrain(ticket.getTrainNumber(), "")
+				.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+	}
+
+	@Test
+	void givenValidTrainNumberAndSectionToFetchTicketDetails() {
+		Ticket ticket = purchaseTicket();
+		List<SeatUserMappingResponse> userSeatMapList = bookingController
+				.retrieveUserSeatMappingsBySectionAndTrain(ticket.getTrainNumber(), ticket.getSection()).getBody();
+		assertNotNull(userSeatMapList);
+		assertEquals(userSeatMapList.get(0).seatNumber(), ticket.getSeat());
+
+	}
+
+	@Test
+	void givenValidUserToDelete() {
+		Ticket ticket = purchaseTicket();
+		assertThat(bookingController.removeUserFromTrain(ticket.getTrainNumber(), ticket.getUser().email())
+				.getStatusCode()).isEqualTo(HttpStatus.OK);
+	}
+
+	@Test
+	void givenValidUserAndSeatToUpdate() {
+		Ticket ticket = purchaseTicket();
 		assertThat(
-				bookingController.retrieveUserSeatMappingsBySectionAndTrain(ticket.getTrainNumber(), "").getStatusCode())
-				.isEqualTo(HttpStatus.BAD_REQUEST);
+				bookingController.modifyUserSeat(ticket.getTrainNumber(), ticket.getUser().email(), 3).getStatusCode())
+				.isEqualTo(HttpStatus.OK);
 	}
 
 }

@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,7 +33,7 @@ public class BookingController {
 
 		if (isBookingDetailsValid(request)) {
 			Optional<Ticket> ticket = bookingService.purchaseTicket(request);
-			return ResponseEntity.ok(ticket.get());
+			return ticket.isPresent() ? ResponseEntity.ok(ticket.get()) : ResponseEntity.notFound().build();
 		}
 		return ResponseEntity.badRequest().build();
 	}
@@ -62,8 +61,8 @@ public class BookingController {
 
 	@DeleteMapping("/trains/{trainNumber}/users/{email}")
 	public ResponseEntity<String> removeUserFromTrain(@PathVariable int trainNumber, @PathVariable String email) {
-		bookingService.deleteUserFromTrain(trainNumber, email);
-		return ResponseEntity.ok("Successfully deleted user from train ticket reservation");
+		String response = bookingService.deleteUserFromTrain(trainNumber, email);
+		return ResponseEntity.ok(response);
 	}
 
 	@PutMapping("update/{trainNumber}/email/{email}/newseat/{newseat}")

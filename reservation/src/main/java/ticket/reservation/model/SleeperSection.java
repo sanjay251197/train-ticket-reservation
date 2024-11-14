@@ -32,9 +32,6 @@ public class SleeperSection implements Section {
 
 	@Override
 	public int allocateSeat() throws IllegalStateException {
-		if (!hasAvailableSeats()) {
-			throw new IllegalStateException("Sleeper section is full");
-		}
 		int seatNumber = availableSeats.poll(); // Allocate the next available seat
 		occupiedSeats.add(seatNumber);
 		return seatNumber;

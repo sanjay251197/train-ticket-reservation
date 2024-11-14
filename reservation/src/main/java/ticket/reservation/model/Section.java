@@ -8,7 +8,7 @@ public interface Section {
 
 	boolean hasAvailableSeats();
 
-	int allocateSeat() throws IllegalStateException;
+	int allocateSeat();
 
 	void cancelSeat(int seatNumber);
 
